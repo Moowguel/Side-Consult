@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  cpf       String?  @unique
+  password  String
+  crm       String?
+  specialty String?
+  role      String   @default("CIDADAO")
+  createdAt DateTime @default(now())
+  vaccines Vaccine[]
+  createdUnits HealthUnit[]
+  triages      Triage[]
+  patientAppointments Appointment[] @relation("PatientAppointments")
+  doctorAppointments  Appointment[] @relation("DoctorAppointments")
+  healthRecords HealthRecord[]
+}
+
+model Triage {
+  id        String   @id @default(cuid())
+  symptoms  String   
+  severity  Int      
+  notes     String?  
+  createdAt DateTime @default(now())
+  
+  patientId String
+  patient   User     @relation(fields: [patientId], references: [id])
+  
+  appointment Appointment?
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String   @default("PENDENTE") 
+  type        String   @default("CONSULTA")
+  vaccineName String?
+  diagnosis String? 
+  modality    String   @default("PRESENCIAL")
+  triageId  String?   @unique 
+  triage    Triage?   @relation(fields: [triageId], references: [id])
+  patientId String
+  patient   User     @relation("PatientAppointments", fields: [patientId], references: [id])
+  doctorId  String? 
+  doctor    User?   @relation("DoctorAppointments", fields: [doctorId], references: [id])
+}
+
+model HealthRecord {
+  id        String   @id @default(cuid())
+  systolic  Int?     
+  diastolic Int?     
+  glucose   Int?     
+  notes     String?  
+  createdAt DateTime @default(now())
+  
+  patientId String
+  patient   User     @relation(fields: [patientId], references: [id])
+}
+
+model HealthUnit {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  type      String   
+  phone     String?
+  createdAt DateTime @default(now())
+
+  creatorId String?
+  creator   User?    @relation(fields: [creatorId], references: [id])
+}
+
+model Vaccine {
+  id        String   @id @default(cuid())
+  name      String   
+  dose      String   
+  batch     String?  
+  date      DateTime 
+  status    String   
+  location  String?  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
