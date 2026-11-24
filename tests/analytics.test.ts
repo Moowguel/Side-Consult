@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { linearTrend, personalAnomaly, detectOutbreak, dailySeries, criticalVitals, maskCpf } from '../lib/analytics'
+import { linearTrend, personalAnomaly, detectOutbreak, dailySeries, criticalVitals, maskCpf, withTitle } from '../lib/analytics'
 import { cleanRow } from '../data/ingest'
 
 test('regressão linear calcula a inclinação por dia', () => {
@@ -32,6 +32,11 @@ test('série diária agrupa por dia e calcula média móvel', () => {
 test('limites críticos de sinais vitais', () => {
   assert.equal(criticalVitals({ spo2: 84 })[0].severity, 5)
   assert.equal(criticalVitals({ systolic: 120, spo2: 98, heartRate: 70 }).length, 0)
+})
+
+test('título do médico não duplica', () => {
+  assert.equal(withTitle('Dra. Ana'), 'Dra. Ana')
+  assert.equal(withTitle('Drauzio Silva'), 'Dr(a). Drauzio Silva')
 })
 
 test('CPF mascarado na tela', () => assert.equal(maskCpf('12345678901'), '***.456.789-**'))

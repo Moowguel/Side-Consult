@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { 
   Activity, ShieldCheck, Calendar, ArrowRight, Stethoscope, 
   Zap, Syringe, HeartPulse, ChevronRight, ChevronLeft, User 
@@ -124,10 +125,13 @@ export default function LandingPage() {
                         className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                     >
 
-                        <img 
-                            src={item.image} 
+                        <Image
+                            src={item.image}
                             alt={item.title}
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[10s] ease-linear transform scale-105 group-hover:scale-110"
+                            fill
+                            sizes="(max-width: 1280px) 100vw, 1280px"
+                            priority={index === 0}
+                            className="object-cover transition-transform duration-[10s] ease-linear transform scale-105 group-hover:scale-110"
                         />
                         
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
@@ -194,10 +198,12 @@ export default function LandingPage() {
 
         <section className="max-w-7xl mx-auto px-6 py-24">
             <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-blue-900">
-                <img 
+                <Image
                     src="https://images.unsplash.com/photo-1584515933487-779824d29309?q=80&w=1920&auto=format&fit=crop"
                     alt="Vacinação"
-                    className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay"
+                    fill
+                    sizes="(max-width: 1280px) 100vw, 1280px"
+                    className="object-cover opacity-40 mix-blend-overlay"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-900 via-blue-900/80 to-transparent"></div>
 

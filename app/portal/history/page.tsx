@@ -1,3 +1,4 @@
+import { withTitle } from '@/lib/analytics'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -79,7 +80,7 @@ export default async function HistoryPage() {
                                 <div>
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-lg font-bold text-slate-800">
-                                            {apt.type === 'VACINA' ? `Vacina: ${apt.vaccineName}` : `Dr(a). ${apt.doctor?.name}`}
+                                            {apt.type === 'VACINA' ? `Vacina: ${apt.vaccineName}` : withTitle(apt.doctor?.name)}
                                         </h3>
                                         {apt.type === 'VACINA' && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-bold flex items-center gap-1"><Syringe size={10}/> VACINA</span>}
                                     </div>
@@ -139,7 +140,7 @@ export default async function HistoryPage() {
                                     <p className="font-bold text-slate-700">
                                         {apt.type === 'VACINA' ? apt.vaccineName : apt.doctor?.specialty || "Consulta"}
                                     </p>
-                                    {apt.doctor?.name && <span className="text-sm text-slate-500">- Dr(a). {apt.doctor.name}</span>}
+                                    {apt.doctor?.name && <span className="text-sm text-slate-500">- {withTitle(apt.doctor.name)}</span>}
                                 </div>
                                 <p className="text-xs text-slate-400 mt-1">{formatDate(apt.date)}</p>
                              </div>

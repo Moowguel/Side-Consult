@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, MapPin, Plus, Building2, Phone, Save, Loader2 } from "lucide-react"
+import { ArrowLeft, MapPin, Building2, Phone, Save, Loader2 } from "lucide-react"
 import { createHealthUnit } from "@/app/actions/unit-actions"
 
 export default function NewUnitPage() {

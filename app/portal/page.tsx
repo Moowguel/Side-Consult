@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { verifySession, SESSION_COOKIE } from '@/lib/session'
-import { Activity, Calendar, FileText, Stethoscope, LogOut, Syringe, HeartPulse, MapPin, Bell, ShieldCheck } from 'lucide-react'
+import { Activity, Calendar, FileText, LogOut, Syringe, HeartPulse, MapPin, Bell, ShieldCheck } from 'lucide-react'
 import { InstallAppButton } from '@/components/PwaClient' 
 
 import { logout } from '@/app/actions/login-actions'

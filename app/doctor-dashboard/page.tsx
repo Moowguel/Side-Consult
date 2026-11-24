@@ -1,3 +1,4 @@
+import { withTitle } from '@/lib/analytics'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
@@ -66,7 +67,7 @@ export default async function DoctorDashboard() {
             
             <div className="flex items-center gap-2 sm:gap-4">
                 <div className="text-right hidden sm:block border-r border-slate-200 pr-6 mr-2">
-                    <p className="text-sm font-bold text-slate-700">Dr(a). {doctor.name}</p>
+                    <p className="text-sm font-bold text-slate-700">{withTitle(doctor.name)}</p>
                     <p className="text-xs text-slate-500">{doctor.specialty} | CRM: {doctor.crm}</p>
                 </div>
                 
@@ -125,7 +126,7 @@ export default async function DoctorDashboard() {
                     ) : (
                         triageQueue.map((item) => {
                             let symptomsList: string[] = [];
-                            try { symptomsList = JSON.parse(item.symptoms); } catch (e) { symptomsList = []; }
+                            try { symptomsList = JSON.parse(item.symptoms); } catch { symptomsList = []; }
                             const config = getSeverityConfig(item.severity);
                             
                             return (

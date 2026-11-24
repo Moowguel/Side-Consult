@@ -1,3 +1,4 @@
+import { withTitle } from '@/lib/analytics'
 import { prisma } from '@/lib/prisma'
 import { verifySession, SESSION_COOKIE } from '@/lib/session'
 import { redirect } from 'next/navigation'
@@ -67,7 +68,7 @@ export default async function PrescriptionPage({ params }: PageProps) {
 
         <footer className="mt-auto pt-12 flex flex-col items-center">
             <div className="w-64 border-t border-slate-900 mb-2"></div>
-            <p className="font-bold text-slate-900">Dr(a). {appointment.doctor?.name}</p>
+            <p className="font-bold text-slate-900">{withTitle(appointment.doctor?.name)}</p>
             <p className="text-sm text-slate-500">CRM: {appointment.doctor?.crm} | {appointment.doctor?.specialty}</p>
             
             <div className="mt-8 text-[10px] text-slate-400 text-center w-full border-t border-slate-200 pt-4">

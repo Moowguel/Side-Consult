@@ -1,6 +1,6 @@
 import { getVaccines } from "@/app/actions/vaccine-actions"
 import Link from "next/link"
-import { ArrowLeft, Syringe, Calendar, MapPin, CheckCircle, AlertCircle, ShieldCheck, Info } from "lucide-react"
+import { ArrowLeft, Syringe, Calendar, MapPin, ShieldCheck, Info } from "lucide-react"
 
 const ACTIVE_CAMPAIGNS = [
 {

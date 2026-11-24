@@ -22,12 +22,6 @@ export default function RegisterPage() {
     consent: false
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.type === "email" ? "email" : e.target.type === "password" ? "password" : e.target.placeholder === "000.000.000-00" ? "cpf" : "name"]: e.target.value
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

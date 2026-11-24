@@ -76,3 +76,7 @@ export const maskCpf = (cpf?: string | null) =>
 // Helpers de tempo fora dos componentes (mantém a renderização pura para o React Compiler).
 export const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000)
 export const isRecent = (d: Date | null, ms: number) => !!d && Date.now() - d.getTime() < ms
+
+// "Dr(a). " só quando o nome ainda não traz o título (evita "Dr(a). Dra. Ana").
+export const withTitle = (name?: string | null) =>
+  !name ? "" : /^dra?\.?\s/i.test(name) ? name : `Dr(a). ${name}`
