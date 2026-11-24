@@ -1,10 +1,10 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { Activity } from 'lucide-react'
 import PrintButton from './PrintButton' 
 
-const prisma = new PrismaClient()
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -13,7 +13,7 @@ interface PageProps {
 export default async function PrescriptionPage({ params }: PageProps) {
   const { id } = await params;
   const cookieStore = await cookies()
-  const sessionId = cookieStore.get('saude_session_id')?.value
+  const sessionId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
   
   if (!sessionId) redirect('/login')
 

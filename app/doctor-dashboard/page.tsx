@@ -1,7 +1,9 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { PrismaClient } from '@prisma/client'
-import { Activity, Clock, AlertTriangle, CheckCircle2, LogOut, Calendar, XCircle, Check, PlayCircle, FileText, History, BarChart3 } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE, isStaff } from '@/lib/session'
+import { Activity, Clock, AlertTriangle, CheckCircle2, LogOut, Calendar, XCircle, Check, PlayCircle, FileText, History, BarChart3, Radio, BrainCircuit } from 'lucide-react'
+import AutoRefresh from '@/components/AutoRefresh'
 import { logout } from '@/app/actions/login-actions'
 import { manageAppointment } from '@/app/actions/doctor-appointment-actions'
 import CallButton from './CallButton'
@@ -9,7 +11,6 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic';
 
-const prisma = new PrismaClient()
 
 
 function formatTime(date: Date) {
@@ -24,12 +25,12 @@ function getSeverityConfig(score: number) {
 
 export default async function DoctorDashboard() {
   const cookieStore = await cookies()
-  const sessionId = cookieStore.get('saude_session_id')?.value
+  const sessionId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
   
   if (!sessionId) redirect('/login')
 
   const doctor = await prisma.user.findUnique({ where: { id: sessionId }})
-  if (!doctor || doctor.role !== 'MEDICO') redirect('/portal')
+  if (!doctor || !isStaff(doctor.role)) redirect('/portal')
 
   const activeAppointments = await prisma.appointment.findMany({
     where: { doctorId: doctor.id, status: "EM_ANDAMENTO" },
@@ -37,7 +38,7 @@ export default async function DoctorDashboard() {
   })
 
   const triageQueue = await prisma.triage.findMany({
-    where: { appointment: null },
+    where: { appointment: null, source: { not: 'IMPORT' } },
     include: { patient: true },
     orderBy: [{ severity: 'desc' }, { createdAt: 'asc' }]
   })
@@ -53,25 +54,26 @@ export default async function DoctorDashboard() {
   })
 
   return (
-    <div className="min-h-screen bg-slate-100 pb-10 h-screen flex flex-col">
+    <div className="min-h-screen bg-slate-100 pb-10 lg:h-screen flex flex-col">
       
       <header className="bg-white shadow-sm z-10 flex-none">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap gap-3 justify-between items-center">
             <div className="flex items-center gap-2">
                 <div className="bg-teal-100 p-2 rounded-lg text-teal-700"><Activity size={20} /></div>
-                <h1 className="text-xl font-bold text-slate-800 hidden sm:block">Painel de Gestão</h1>
+                <h1 className="text-xl font-bold text-slate-800 hidden sm:block">Painel Clínico</h1>
+                <AutoRefresh ms={5000} />
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
                 <div className="text-right hidden sm:block border-r border-slate-200 pr-6 mr-2">
                     <p className="text-sm font-bold text-slate-700">Dr(a). {doctor.name}</p>
                     <p className="text-xs text-slate-500">{doctor.specialty} | CRM: {doctor.crm}</p>
                 </div>
                 
-                <Link href="/management" className="flex items-center gap-2 text-sm font-bold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-lg transition" title="Painel Administrativo">
+                {doctor.role === 'GESTOR' && <Link href="/management" className="flex items-center gap-2 text-sm font-bold text-purple-600 hover:text-purple-800 bg-purple-50 hover:bg-purple-100 px-4 py-2 rounded-lg transition" title="Painel Administrativo">
                     <BarChart3 size={16} />
                     <span className="hidden md:inline">Gestão</span>
-                </Link>
+                </Link>}
 
                 <Link href="/doctor-dashboard/history" className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition">
                     <History size={16} />
@@ -85,7 +87,7 @@ export default async function DoctorDashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-6 flex-1 w-full overflow-hidden flex flex-col">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full lg:overflow-hidden flex flex-col">
 
         {activeAppointments.length > 0 && (
             <div className="flex-none mb-6 bg-blue-600 rounded-xl p-4 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 animate-pulse-slow">
@@ -107,15 +109,15 @@ export default async function DoctorDashboard() {
             </div>
         )}
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full overflow-hidden pb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:h-full lg:overflow-hidden pb-4">
             
-            <section className="flex flex-col h-full overflow-hidden">
+            <section className="flex flex-col lg:h-full lg:overflow-hidden">
                 <h2 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2 flex-none">
                     <AlertTriangle size={20} className="text-orange-500"/>
                     Fila de Pronto Socorro
                 </h2>
 
-                <div className="space-y-4 overflow-y-auto pr-2 pb-20 flex-1 custom-scrollbar">
+                <div className="space-y-4 lg:overflow-y-auto lg:pr-2 lg:pb-20 flex-1">
                     {triageQueue.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300">
                             <p className="text-slate-400">Fila vazia.</p>
@@ -135,7 +137,11 @@ export default async function DoctorDashboard() {
                                                 <Clock size={12}/> Chegou às {formatTime(item.createdAt)}
                                             </p>
                                         </div>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${config.text} bg-white border border-current`}>{config.label}</span>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${config.text} bg-white border border-current`}>{config.label}</span>
+                                            {item.source === 'IOT' && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-50 text-cyan-700 flex items-center gap-1"><Radio size={10}/> ALERTA IoT</span>}
+                                            {item.aiSeverity != null && item.aiSeverity > (item.ruleSeverity ?? 0) && <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 flex items-center gap-1" title="A IA elevou a prioridade a partir do relato/idade"><BrainCircuit size={10}/> IA ELEVOU</span>}
+                                        </div>
                                     </div>
                                     
                                     <div className="mb-4">
@@ -151,7 +157,7 @@ export default async function DoctorDashboard() {
                                                 <p className="text-xs font-bold text-slate-400 uppercase flex gap-1 items-center">
                                                     <FileText size={10}/> Relato
                                                 </p>
-                                                <p className="text-xs text-slate-700 italic line-clamp-2">"{item.notes}"</p>
+                                                <p className="text-xs text-slate-700 italic line-clamp-2">&quot;{item.notes}&quot;</p>
                                             </div>
                                         )}
                                     </div>
@@ -166,14 +172,14 @@ export default async function DoctorDashboard() {
                 </div>
             </section>
 
-            <section className="flex flex-col h-full overflow-hidden">
+            <section className="flex flex-col lg:h-full lg:overflow-hidden">
                 <h2 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2 flex-none">
                     <Calendar size={20} className="text-blue-500"/>
                     Solicitações de Agenda
                 </h2>
 
 
-                <div className="space-y-4 overflow-y-auto pr-2 pb-20 flex-1 custom-scrollbar">
+                <div className="space-y-4 lg:overflow-y-auto lg:pr-2 lg:pb-20 flex-1">
                     {appointments.length === 0 ? (
                         <div className="text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
                             <p className="text-slate-400">Nenhum agendamento.</p>

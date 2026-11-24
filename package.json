@@ -6,7 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "test": "tsx --test tests/*.test.ts",
+    "setup": "prisma migrate reset --force && npm run data:pipeline",
+    "data:generate": "tsx data/generate-raw.ts",
+    "data:ingest": "tsx data/ingest.ts",
+    "data:pipeline": "npm run data:generate && npm run data:ingest",
+    "ai:dataset": "tsx ai/generate-dataset.ts",
+    "ai:train": "tsx ai/train.ts",
+    "ai:feedback": "tsx ai/export-feedback.ts",
+    "iot:sim": "tsx iot/simulator.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -28,5 +37,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

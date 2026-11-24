@@ -41,3 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 /**/dev.db
+!.env.example
+
+# gerados pelos scripts (npm run setup / ai:feedback)
+/data/raw/
+/data/processed/
+/ai/data/feedback.csv

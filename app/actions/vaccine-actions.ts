@@ -1,13 +1,13 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE } from '@/lib/session'
 import { cookies } from 'next/headers'
 
-const prisma = new PrismaClient()
 
 export async function getVaccines() {
   const cookieStore = await cookies()
-  const sessionId = cookieStore.get('saude_session_id')?.value
+  const sessionId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
   
   if (!sessionId) return []
 

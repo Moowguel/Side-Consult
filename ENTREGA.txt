@@ -1,0 +1,10 @@
+Global Solution 2026/2 - Substitutiva - Saúde Pública Inteligente
+Turma: 4ESOA
+
+Nome: <SEU NOME COMPLETO>
+RM: <SEU RM>
+
+Link do vídeo pitch (até 3 min): <LINK YOUTUBE / GOOGLE DRIVE / VIMEO>
+Repositório: https://github.com/Moowguel/Side-Consult
+
+Como executar: ver README.md (npm install -> npm run setup -> npm run dev)

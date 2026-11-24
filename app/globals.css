@@ -12,12 +12,8 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* O app usa tema claro (cartões brancos); sem isso o modo escuro do sistema deixava texto claro sobre fundo branco. */
+:root { color-scheme: light; }
 
 body {
   background: var(--background);

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "author": "SideConsult",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-potentiometer", "id": "potSpo2", "top": -120, "left": -160, "attrs": { "value": "4000" } },
+    { "type": "wokwi-potentiometer", "id": "potHr", "top": -120, "left": -40, "attrs": { "value": "1500" } },
+    { "type": "wokwi-potentiometer", "id": "potSys", "top": -120, "left": 80, "attrs": { "value": "1200" } },
+    { "type": "wokwi-led", "id": "led", "top": 20, "left": 180, "attrs": { "color": "red" } },
+    { "type": "wokwi-resistor", "id": "r1", "top": 90, "left": 170, "attrs": { "value": "220" } },
+    { "type": "wokwi-pushbutton", "id": "btn", "top": 160, "left": 180, "attrs": { "color": "red", "label": "Crise" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "potSpo2:SIG", "esp:34", "green", [] ],
+    [ "potSpo2:VCC", "esp:3V3", "red", [] ],
+    [ "potSpo2:GND", "esp:GND.1", "black", [] ],
+    [ "potHr:SIG", "esp:35", "green", [] ],
+    [ "potHr:VCC", "esp:3V3", "red", [] ],
+    [ "potHr:GND", "esp:GND.1", "black", [] ],
+    [ "potSys:SIG", "esp:32", "green", [] ],
+    [ "potSys:VCC", "esp:3V3", "red", [] ],
+    [ "potSys:GND", "esp:GND.1", "black", [] ],
+    [ "esp:2", "led:A", "green", [] ],
+    [ "led:C", "r1:1", "black", [] ],
+    [ "r1:2", "esp:GND.2", "black", [] ],
+    [ "btn:1.l", "esp:4", "blue", [] ],
+    [ "btn:2.l", "esp:GND.2", "black", [] ]
+  ],
+  "dependencies": {}
+}

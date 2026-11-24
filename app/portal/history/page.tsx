@@ -1,10 +1,10 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE } from '@/lib/session'
 import { ArrowLeft, Calendar, Clock, MapPin, CheckCircle2, History, Printer, Syringe, Video } from 'lucide-react'
 
-const prisma = new PrismaClient()
 
 
 const formatDate = (date: Date) => {
@@ -17,7 +17,7 @@ const formatDate = (date: Date) => {
 export default async function HistoryPage() {
 
   const cookieStore = await cookies()
-  const sessionId = cookieStore.get('saude_session_id')?.value
+  const sessionId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
   
   if (!sessionId) redirect('/login')
 
