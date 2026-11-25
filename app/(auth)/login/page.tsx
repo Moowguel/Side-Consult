@@ -23,7 +23,7 @@ export default function LoginPage() {
     const result = await loginUser(formData);
 
     if (result.success) {
-      router.push("/portal");
+      router.push(result.redirectUrl || "/portal");
       router.refresh(); 
     } else {
       setError(result.message || "Erro ao entrar.");

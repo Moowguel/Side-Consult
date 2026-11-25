@@ -16,15 +16,12 @@ export default function RegisterPage() {
     name: "",
     email: "",
     cpf: "",
-    password: ""
+    password: "",
+    birthYear: "",
+    region: "",
+    consent: false
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.type === "email" ? "email" : e.target.type === "password" ? "password" : e.target.placeholder === "000.000.000-00" ? "cpf" : "name"]: e.target.value
-    });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +29,11 @@ export default function RegisterPage() {
     setError("");
 
     // Validação básica
+    if (!formData.consent) {
+        setError("É preciso aceitar o termo de uso de dados (LGPD) para continuar.");
+        setIsLoading(false);
+        return;
+    }
     if (!formData.name || !formData.email || !formData.password || !formData.cpf) {
         setError("Todos os campos são obrigatórios.");
         setIsLoading(false);
@@ -43,7 +45,10 @@ export default function RegisterPage() {
         name: formData.name,
         email: formData.email,
         cpf: formData.cpf, 
-        password: formData.password
+        password: formData.password,
+        birthYear: formData.birthYear ? Number(formData.birthYear) : null,
+        region: formData.region || null,
+        consent: formData.consent
     });
 
     if (result.success) {
@@ -117,6 +122,27 @@ export default function RegisterPage() {
             />
           </div>
           
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Ano de nascimento</label>
+              <input name="birthYear" type="number" inputMode="numeric" placeholder="1980" value={formData.birthYear}
+                onChange={(e) => setFormData({...formData, birthYear: e.target.value})}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 bg-white placeholder:text-slate-400" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Região</label>
+              <select name="region" value={formData.region} onChange={(e) => setFormData({...formData, region: e.target.value})}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 bg-white">
+                <option value="">Selecione</option>
+                {["Centro", "Zona Norte", "Zona Sul", "Zona Leste", "Zona Oeste"].map(r => <option key={r}>{r}</option>)}
+              </select>
+            </div>
+          </div>
+          <label className="flex items-start gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
+            <input type="checkbox" checked={formData.consent} onChange={(e) => setFormData({...formData, consent: e.target.checked})} className="mt-0.5" />
+            <span>Autorizo o uso dos meus dados de saúde para triagem, atendimento e estatísticas anonimizadas de saúde pública, conforme a LGPD (Lei 13.709/2018). Posso consultar quem acessou meu prontuário no portal.</span>
+          </label>
+
           <button 
             type="submit" 
             disabled={isLoading}

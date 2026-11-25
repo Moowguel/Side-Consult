@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, User, Clock, CheckCircle, Stethoscope, Loader2, Syringe, Video, MapPin } from 'lucide-react'
+import { ArrowLeft, Clock, CheckCircle, Stethoscope, Loader2, Syringe, Video, MapPin } from 'lucide-react'
 import { getDoctors, scheduleAppointment } from '@/app/actions/appointment-actions'
 
 type Doctor = { id: string; name: string; specialty: string | null; crm: string | null }

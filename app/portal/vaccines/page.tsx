@@ -66,7 +66,6 @@ export default async function VaccinePage() {
                 <div className="relative border-l-2 border-slate-100 ml-3 space-y-8">
                     {vaccines.map((vac) => {
                         const style = getStatusStyle(vac.status)
-                        const StatusIcon = style.icon
 
                         return (
                             <div key={vac.id} className="ml-8 relative">

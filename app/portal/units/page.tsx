@@ -2,6 +2,9 @@ import { getHealthUnits } from "@/app/actions/unit-actions"
 import Link from "next/link"
 import { ArrowLeft, MapPin, Phone, Building, Navigation } from "lucide-react"
 
+// Dinâmica: a lista vem do banco e muda quando o médico cadastra unidades (antes ficava congelada no build).
+export const dynamic = "force-dynamic"
+
 const UnitIcon = ({ type }: { type: string }) => {
     if (type === 'HOSPITAL') return <div className="bg-red-100 p-3 rounded-full text-red-600"><Building size={24} /></div>
     if (type === 'FARMACIA') return <div className="bg-green-100 p-3 rounded-full text-green-600"><Building size={24} /></div>

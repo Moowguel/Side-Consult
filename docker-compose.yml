@@ -1,0 +1,22 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      SESSION_SECRET: ${SESSION_SECRET:-troque-este-segredo-em-producao}
+    volumes:
+      - sideconsult-data:/data
+    restart: unless-stopped
+
+  # Simulador IoT: envia leituras do wearable de demonstração para a API (perfil opcional).
+  # docker compose --profile iot up
+  iot-simulator:
+    build: .
+    profiles: ["iot"]
+    command: ["npx", "tsx", "iot/simulator.ts", "--url", "http://app:3000", "--crise", "10"]
+    depends_on:
+      - app
+
+volumes:
+  sideconsult-data:

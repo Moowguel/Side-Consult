@@ -1,30 +1,34 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PrismaClient } from '@prisma/client'
-import { Activity, Calendar, FileText, Stethoscope, LogOut, Syringe, HeartPulse, MapPin, Bell } from 'lucide-react' 
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE } from '@/lib/session'
+import { Activity, Calendar, FileText, LogOut, Syringe, HeartPulse, MapPin, Bell, ShieldCheck } from 'lucide-react'
+import { InstallAppButton } from '@/components/PwaClient' 
 
 import { logout } from '@/app/actions/login-actions'
 
-const prisma = new PrismaClient()
 
 export default async function PortalPage() {
   const cookieStore = await cookies()
-  const sessionId = cookieStore.get('saude_session_id')?.value
+  const sessionId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
   
   if (!sessionId) redirect('/login')
 
   const user = await prisma.user.findUnique({ where: { id: sessionId } })
   if (!user) redirect('/login')
 
+  const accessLogs = await prisma.accessLog.findMany({ where: { patientId: user.id }, include: { actor: true }, orderBy: { createdAt: 'desc' }, take: 5 })
+
   return (
     <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+      <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <div className="flex items-center gap-2 text-blue-600 font-bold text-xl">
           <Activity />
           <span className="hidden sm:inline">Portal do Cidadão</span>
         </div>
         <div className="flex items-center gap-4">
+            <InstallAppButton className="text-blue-600 bg-blue-50 px-3 py-2 rounded-lg" />
             <div className="relative cursor-pointer group">
                 <Bell size={20} className="text-slate-500 group-hover:text-blue-600 transition"/>
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
@@ -43,7 +47,7 @@ export default async function PortalPage() {
         </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto p-6 mt-2">
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 mt-2">
         
         <div className="mb-8 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -116,6 +120,21 @@ export default async function PortalPage() {
             </Link>
 
         </div>
+
+        <section className="mt-8 bg-white rounded-2xl border border-slate-100 p-5">
+            <h2 className="font-bold text-slate-800 flex items-center gap-2 mb-1"><ShieldCheck className="text-emerald-600" size={20}/> Seus dados, sob seu controle (LGPD)</h2>
+            <p className="text-sm text-slate-500 mb-4">Todo acesso ao seu prontuário é registrado. Veja quem consultou seus dados:</p>
+            {accessLogs.length === 0 ? <p className="text-sm text-slate-400">Nenhum acesso registrado.</p> : (
+                <ul className="space-y-2">
+                    {accessLogs.map(l => (
+                        <li key={l.id} className="text-sm text-slate-600 flex flex-wrap justify-between gap-2 border-b border-slate-50 pb-2">
+                            <span><b>{l.actor.name}</b>{l.actor.crm ? ` (CRM ${l.actor.crm})` : ''} abriu seu prontuário</span>
+                            <span className="text-slate-400">{l.createdAt.toLocaleString('pt-BR')}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
       </main>
     </div>
   )

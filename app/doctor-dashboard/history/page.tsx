@@ -1,14 +1,14 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE } from '@/lib/session'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, Calendar, User, FileText } from 'lucide-react'
 
-const prisma = new PrismaClient()
 
 export default async function DoctorHistoryPage() {
   const cookieStore = await cookies()
-  const sessionId = cookieStore.get('saude_session_id')?.value
+  const sessionId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
   
   if (!sessionId) redirect('/login')
 
@@ -69,7 +69,7 @@ export default async function DoctorHistoryPage() {
                                 <FileText size={12}/> Diagnóstico / Conduta
                             </p>
                             <p className="text-slate-700 text-sm italic">
-                                "{apt.diagnosis || 'Sem anotações'}"
+                                &quot;{apt.diagnosis || 'Sem anotações'}&quot;
                             </p>
                         </div>
 

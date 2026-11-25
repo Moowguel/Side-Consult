@@ -1,12 +1,16 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
+import { verifySession, SESSION_COOKIE, isStaff } from '@/lib/session'
 
-const prisma = new PrismaClient()
 
 export async function manageAppointment(appointmentId: string, action: 'CONFIRMAR' | 'RECUSAR') {
   
+  const session = verifySession((await cookies()).get(SESSION_COOKIE)?.value)
+  if (!session || !isStaff(session.role)) return { success: false, message: "Não autorizado." }
+
   const newStatus = action === 'CONFIRMAR' ? 'AGENDADO' : 'RECUSADO';
 
   try {

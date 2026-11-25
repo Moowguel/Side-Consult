@@ -1,10 +1,10 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE, isStaff } from '@/lib/session'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
-const prisma = new PrismaClient()
 
 
 export async function getHealthUnits() {
@@ -15,12 +15,12 @@ export async function getHealthUnits() {
 
 export async function createHealthUnit(formData: FormData) {
   const cookieStore = await cookies()
-  const sessionId = cookieStore.get('saude_session_id')?.value
+  const sessionId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
 
   if (!sessionId) return { success: false, message: "Não autorizado." }
 
   const user = await prisma.user.findUnique({ where: { id: sessionId }})
-  if (!user || user.role !== 'MEDICO') {
+  if (!user || !isStaff(user.role)) {
     return { success: false, message: "Apenas médicos podem cadastrar unidades." }
   }
 

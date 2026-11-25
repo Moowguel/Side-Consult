@@ -16,7 +16,10 @@ model User {
   password  String
   crm       String?
   specialty String?
-  role      String   @default("CIDADAO")
+  role      String   @default("CIDADAO") // CIDADAO | MEDICO | GESTOR
+  birthYear Int?
+  region    String?
+  consentAt DateTime? // LGPD: aceite do termo de uso de dados
   createdAt DateTime @default(now())
   vaccines Vaccine[]
   createdUnits HealthUnit[]
@@ -24,45 +27,63 @@ model User {
   patientAppointments Appointment[] @relation("PatientAppointments")
   doctorAppointments  Appointment[] @relation("DoctorAppointments")
   healthRecords HealthRecord[]
+  devices       Device[]
+  accessLogs    AccessLog[] @relation("AccessedPatient")
+  accessesMade  AccessLog[] @relation("AccessActor")
 }
 
 model Triage {
   id        String   @id @default(cuid())
-  symptoms  String   
-  severity  Int      
-  notes     String?  
+  symptoms  String
+  severity  Int      // gravidade final (1-5) = max(regras, IA)
+  notes     String?
+  painLevel Int?
+  age       Int?
+  region    String?
+  source    String   @default("APP") // APP | IOT | IMPORT
+  ruleSeverity   Int?    // o que as regras de Manchester deram
+  aiSeverity     Int?    // o que o modelo SideConsult previu
+  aiConfidence   Float?
+  aiFactors      String? // JSON com os fatores que mais pesaram
+  specialty      String? // especialidade sugerida pelo agente
+  doctorSeverity Int?    // gravidade confirmada pelo médico (rótulo para re-treino)
   createdAt DateTime @default(now())
-  
+
   patientId String
   patient   User     @relation(fields: [patientId], references: [id])
-  
+
   appointment Appointment?
 }
 
 model Appointment {
   id        String   @id @default(cuid())
   date      DateTime
-  status    String   @default("PENDENTE") 
+  status    String   @default("PENDENTE")
   type        String   @default("CONSULTA")
   vaccineName String?
-  diagnosis String? 
+  diagnosis String?
   modality    String   @default("PRESENCIAL")
-  triageId  String?   @unique 
+  triageId  String?   @unique
   triage    Triage?   @relation(fields: [triageId], references: [id])
   patientId String
   patient   User     @relation("PatientAppointments", fields: [patientId], references: [id])
-  doctorId  String? 
+  doctorId  String?
   doctor    User?   @relation("DoctorAppointments", fields: [doctorId], references: [id])
 }
 
 model HealthRecord {
   id        String   @id @default(cuid())
-  systolic  Int?     
-  diastolic Int?     
-  glucose   Int?     
-  notes     String?  
+  systolic  Int?
+  diastolic Int?
+  glucose   Int?
+  heartRate Int?
+  spo2      Int?
+  notes     String?
+  source    String   @default("MANUAL") // MANUAL | DEVICE
+  deviceId  String?
+  device    Device?  @relation(fields: [deviceId], references: [id])
   createdAt DateTime @default(now())
-  
+
   patientId String
   patient   User     @relation(fields: [patientId], references: [id])
 }
@@ -71,7 +92,7 @@ model HealthUnit {
   id        String   @id @default(cuid())
   name      String
   address   String
-  type      String   
+  type      String
   phone     String?
   createdAt DateTime @default(now())
 
@@ -81,12 +102,35 @@ model HealthUnit {
 
 model Vaccine {
   id        String   @id @default(cuid())
-  name      String   
-  dose      String   
-  batch     String?  
-  date      DateTime 
-  status    String   
-  location  String?  
+  name      String
+  dose      String
+  batch     String?
+  date      DateTime
+  status    String
+  location  String?
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+}
+
+// Dispositivo IoT vinculado a um paciente; autentica na API pelo token.
+model Device {
+  id        String   @id @default(cuid())
+  name      String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  lastSeen  DateTime?
+  patientId String
+  patient   User     @relation(fields: [patientId], references: [id])
+  records   HealthRecord[]
+}
+
+// Trilha de auditoria (LGPD): quem acessou o prontuário de quem.
+model AccessLog {
+  id        String   @id @default(cuid())
+  action    String
+  createdAt DateTime @default(now())
+  actorId   String
+  actor     User     @relation("AccessActor", fields: [actorId], references: [id])
+  patientId String
+  patient   User     @relation("AccessedPatient", fields: [patientId], references: [id])
 }

@@ -1,15 +1,15 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
+import { verifySession, SESSION_COOKIE } from '@/lib/session'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 
-const prisma = new PrismaClient()
 
 
 export async function getDoctors() {
   return await prisma.user.findMany({
-    where: { role: 'MEDICO' },
+    where: { role: { in: ['MEDICO', 'GESTOR'] } },
     select: { id: true, name: true, specialty: true, crm: true }
   })
 }
@@ -22,7 +22,7 @@ export async function scheduleAppointment(
     modality: string = 'PRESENCIAL'    
 ) {
   const cookieStore = await cookies()
-  const patientId = cookieStore.get('saude_session_id')?.value
+  const patientId = verifySession(cookieStore.get(SESSION_COOKIE)?.value)?.userId
 
   if (!patientId) {
       return { success: false, message: "Você precisa estar logado para agendar." }

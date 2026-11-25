@@ -1,45 +1,42 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { cookies } from 'next/headers' 
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/session'
 
-const prisma = new PrismaClient()
+const HOME_BY_ROLE: Record<string, string> = {
+  MEDICO: '/doctor-dashboard',
+  GESTOR: '/management',
+  CIDADAO: '/portal',
+}
 
 export async function loginUser(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  const user = await prisma.user.findUnique({
-    where: { email }
-  })
+  const user = await prisma.user.findUnique({ where: { email } })
 
-  if (!user) {
-    return { success: false, message: "E-mail não encontrado." }
+  // Mensagem única: não revela se o e-mail existe (evita enumeração de usuários).
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    return { success: false, message: "E-mail ou senha inválidos." }
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password)
-
-  if (!isPasswordValid) {
-    return { success: false, message: "Senha incorreta." }
-  }
-
-  const cookieStore = await cookies() 
-  
-  cookieStore.set('saude_session_id', user.id, {
+  const cookieStore = await cookies()
+  cookieStore.set(SESSION_COOKIE, createSessionToken(user.id, user.role), {
     httpOnly: true,
+    sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24 * 7, 
+    maxAge: SESSION_MAX_AGE,
     path: '/',
   })
 
-  const destination = user.role === 'MEDICO' ? '/doctor-dashboard' : '/portal';
-  return { success: true, redirectUrl: destination }
+  return { success: true, redirectUrl: HOME_BY_ROLE[user.role] ?? '/portal' }
 }
 
 export async function logout() {
-  const cookieStore = await cookies() 
-  cookieStore.delete('saude_session_id')
+  const cookieStore = await cookies()
+  cookieStore.delete(SESSION_COOKIE)
   redirect('/login')
 }
